@@ -1,0 +1,1 @@
+module.exports.categoryValidation = require("./catagories.validation");
