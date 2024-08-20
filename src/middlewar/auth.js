@@ -7,7 +7,8 @@ const auth = (roles=[]) => async (req, res, next) => {
     
     try {
         const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer ", "")
-
+        console.log(token);
+        
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -20,6 +21,8 @@ const auth = (roles=[]) => async (req, res, next) => {
             console.log(variToken);
 
             const user = await Users.findById(variToken._id)
+            console.log(user);
+            
             
             if (!user) {
                 return res.status(404).json({
