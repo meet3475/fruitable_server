@@ -57,7 +57,7 @@ app.use("/api/v1", routes);
 
 //localhost:8000
 app.get('/', (req, res) => {
-    req.send("Hello World")
+    res.send("Hello World")
 })
 
 app.listen(8000, () => {
