@@ -160,15 +160,17 @@ const login = async (req, res) => {
         const accessTokenoption = {
             httpOnly: true,
             secure: true,
+            sameSite: 'None',
             maxAge: 60 * 60 * 1000,
-            sameSite: 'None'
+
         }
 
         const refreshTokenoption = {
             httpOnly: true,
             secure: true,
+            sameSite: 'None',
             maxAge: 60 * 60 * 24 * 10 * 1000,
-            sameSite: 'None'
+
         }
 
         res.status(200)
@@ -227,16 +229,25 @@ const generateNewTokens = async (req, res) => {
 
         console.log({ accessToken, refreshToken });
 
-        const option = {
+        const accessTokenoption = {
             httpOnly: true,
             secure: true,
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            sameSite: 'None'
+            sameSite: 'None',
+            maxAge: 60 * 60 * 1000,
+
+        }
+
+        const refreshTokenoption = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None',
+            maxAge: 60 * 60 * 24 * 10 * 1000,
+
         }
 
         res.status(200)
-            .cookie("accessToken", accessToken, option)
-            .cookie("refreshToken", refreshToken, option)
+            .cookie("accessToken", accessToken, accessTokenoption)
+            .cookie("refreshToken", refreshToken, refreshTokenoption)
             .json({
                 success: true,
                 message: "Refresh Token Sucessfully",
@@ -308,7 +319,7 @@ const checkAuth = async (req, res) => {
 
         const verifyUser = await jwt.verify(accessToken, process.env.USER_ACCESS_TOKEN_KEY)
         console.log(verifyUser);
-        
+
         if (!verifyUser) {
             return res.status(400).json({
                 success: false,
