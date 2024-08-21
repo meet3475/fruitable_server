@@ -229,25 +229,17 @@ const generateNewTokens = async (req, res) => {
 
         console.log({ accessToken, refreshToken });
 
-        const accessTokenoption = {
+        const option = {
             httpOnly: true,
             secure: true,
             sameSite: 'None',
-            maxAge: 60 * 60 * 1000,
-
-        }
-
-        const refreshTokenoption = {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'None',
-            maxAge: 60 * 60 * 24 * 10 * 1000,
-
+            maxAge: 30 * 24 * 60 * 60 * 1000
+            
         }
 
         res.status(200)
-            .cookie("accessToken", accessToken, accessTokenoption)
-            .cookie("refreshToken", refreshToken, refreshTokenoption)
+            .cookie("accessToken", accessToken, option)
+            .cookie("refreshToken", refreshToken, option)
             .json({
                 success: true,
                 message: "Refresh Token Sucessfully",
