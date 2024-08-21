@@ -10,7 +10,7 @@ const routes = express.Router();
 //localhost:3000/api/v1/categories/list-categories
 routes.get(
     '/list-categories',
-    // auth(["admin", "user"]),
+    auth(["admin", "user"]),
     categoriesController.listcategories
 )
 
