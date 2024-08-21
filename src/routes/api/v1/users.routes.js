@@ -80,14 +80,14 @@ routes.get(
                 httpOnly: true,
                 secure: true,
                 maxAge: 60 * 60 * 1000,
-                sameSite: 'none'
+                sameSite: 'None'
             }
 
             const refreshTokenoption = {
                 httpOnly: true,
                 secure: true,
                 maxAge: 60 * 60 * 24 * 10 * 1000,
-                sameSite: 'none'
+                sameSite: 'None'
             }
 
             res.status(200)

@@ -161,14 +161,14 @@ const login = async (req, res) => {
             httpOnly: true,
             secure: true,
             maxAge: 60 * 60 * 1000,
-            sameSite: 'none'
+            sameSite: 'None'
         }
 
         const refreshTokenoption = {
             httpOnly: true,
             secure: true,
             maxAge: 60 * 60 * 24 * 10 * 1000,
-            sameSite: 'none'
+            sameSite: 'None'
         }
 
         res.status(200)
@@ -231,7 +231,7 @@ const generateNewTokens = async (req, res) => {
             httpOnly: true,
             secure: true,
             maxAge: 30 * 24 * 60 * 60 * 1000,
-            sameSite: 'none'
+            sameSite: 'None'
         }
 
         res.status(200)
