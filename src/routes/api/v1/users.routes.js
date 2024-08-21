@@ -79,6 +79,7 @@ routes.get(
             const accessTokenoption = {
                 httpOnly: true,
                 secure: true,
+                sameSite: 'None',
                 maxAge: 60 * 60 * 1000,
                
             }
@@ -86,6 +87,7 @@ routes.get(
             const refreshTokenoption = {
                 httpOnly: true,
                 secure: true,
+                sameSite: 'None',
                 maxAge: 60 * 60 * 24 * 10 * 1000,  
             }
 
