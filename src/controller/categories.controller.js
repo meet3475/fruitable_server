@@ -25,7 +25,7 @@ const listcategories = async (req, res) => {
             })
         }
 
-        let startIndex=0, endIndex=0, paginationdata=[]
+        let startIndex=0, endIndex=0, paginationdata=[...categories]
         
         if (page > 0 || pageSize > 0) {           //page=2, pageSize=3
             startIndex = (page - 1) * pageSize;  // 2-1 * 3 = 3
@@ -345,33 +345,67 @@ const deletecategory = async (req, res) => {
     }
 }
 
+// const updatecategory = async (req, res) => {
+//     try {
+//         console.log("acbd", req.params.category_id, req.body);
+
+//         const category = await Categories.findByIdAndUpdate(req.params.category_id, req.body, { new: true, runValidators: true });
+//         console.log(category);
+
+//         if (!category) {
+//             res.status(400).json({
+//                 success: false,
+//                 message: "Category not Update"
+//             })
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Category Update sucessfully",
+//             data: category
+//         })
+
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Intenal server error." + error.message
+//         })
+//     }
+// }
 const updatecategory = async (req, res) => {
     try {
-        console.log("acbd", req.params.category_id, req.body);
+        // Remove fields that should not be updated
+        const { _id, isActive, createdAt, updatedAt, ...updateData } = req.body;
 
-        const category = await Categories.findByIdAndUpdate(req.params.category_id, req.body, { new: true, runValidators: true });
-        console.log(category);
+        const category = await Categories.findByIdAndUpdate(
+            req.params.category_id,
+            updateData,
+            { new: true, runValidators: true }
+        );
 
         if (!category) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
-                message: "Category not Update"
-            })
+                message: "Category not found or not updated."
+            });
         }
 
         res.status(200).json({
             success: true,
-            message: "Category Update sucessfully",
+            message: "Category updated successfully",
             data: category
-        })
+        });
 
     } catch (error) {
+        console.error("Update Error:", error);
         res.status(500).json({
             success: false,
-            message: "Intenal server error." + error.message
-        })
+            message: "Internal server error: " + error.message
+        });
     }
-}
+};
+
+
 
 
 module.exports = {
