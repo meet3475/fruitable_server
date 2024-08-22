@@ -2,7 +2,7 @@ const Categories = require("../model/categories.model")
 
 const listcategories = async (req, res) => {
 
-    // console.log("categroyDone", req.query.page, req.query.pageSize);
+    console.log("categroyDone", req.query.page, req.query.pageSize);
 
     try {
 
