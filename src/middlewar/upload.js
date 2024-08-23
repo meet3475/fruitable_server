@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
       // const FilePath = path.join("public", file.fieldname);
       // console.log(FilePath);
       const fieldname = file.fieldname;
-      const FilePath = path.join("/temp", fieldname);
+      const FilePath = path.join("public/temp", fieldname);
 
       console.log(FilePath, fieldname);
       
