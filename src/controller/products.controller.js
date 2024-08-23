@@ -255,7 +255,7 @@ const getproducts = async (req, res) => {
 
 const addproducts = async (req, res) => {
     try {
-        console.log(req.body);
+        // console.log(req.body);
         console.log(req.file);
 
         const fileResult = await uploadfiles(req.file.path, "Product");
