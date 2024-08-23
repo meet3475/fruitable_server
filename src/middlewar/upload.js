@@ -5,13 +5,15 @@ const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+    const fieldname = file.fieldname;
     // const FilePath = path.join("public", file.fieldname);
     // console.log(FilePath);
-    const fieldname = file.fieldname;
-    // const FilePath = path.join("public/temp", fieldname);
 
+    // const FilePath = path.join("public/temp", fieldname);
+    //localhost
 
     const FilePath = path.join("/tmp", fieldname);
+    //liveserver
 
     console.log(FilePath, fieldname);
 
