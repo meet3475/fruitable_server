@@ -137,7 +137,7 @@ const updateReviews = async (req, res) => {
     }
 }
 
-const approveReviews = async (req, res) => {
+const approveAndrejectReviews = async (req, res) => {
     const { reviews_id } = req.params;
 
     const result = await Reviews.updateOne(
@@ -159,40 +159,6 @@ const approveReviews = async (req, res) => {
     })
 
     console.log(result);
-}
-
-const rejectReviews = async (req, res) => {
-    try {
-        const userId = req.params.user_id;
-
-        const objectId = new mongoose.Types.ObjectId(userId);
-
-        const reviews = await Reviews.aggregate([
-            {
-                $match: {
-                    user_id: objectId,
-                    isApproved: false
-                }
-            },
-            {
-                $project: {
-                    _id: 1
-                }
-            }
-        ]);
-
-        res.status(200).json({
-            success: true,
-            message: 'Reviews fetched successfully.',
-            data: reviews
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'An error occurred while fetching reviews.',
-            error: error.message
-        });
-    }
 }
 
 const reviewofuser = async (req, res) => {
@@ -331,38 +297,6 @@ const toprate = async (req, res) => {
     console.log(reviews);
 }
 
-const specificeUser = async (req, res) => {
-    const reviews = await Reviews.aggregate([
-        {
-            $lookup: {
-                from: "users",
-                localField: "user_id",
-                foreignField: "_id",
-                as: "user"
-            }
-        },
-        {
-            $match: {
-                user: { $ne: [] }
-            }
-        },
-        {
-            $project: {
-                user: 1
-            }
-        }
-    ]
-    )
-
-    res.status(200).json({
-        success: true,
-        message: "reviews get  succesfully",
-        data: reviews
-    })
-
-    console.log(reviews);
-}
-
 const withcomment = async (req, res) => {
     const reviews = await Reviews.aggregate([
         {
@@ -416,13 +350,11 @@ module.exports = {
     creatReviews,
     deleteReviews,
     updateReviews,
-    approveReviews,
-    rejectReviews,
+    approveAndrejectReviews,
     reviewofuser,
     reviewofproduct,
     noreviewProduct,
     toprate,
-    specificeUser,
     withcomment,
     countProduct
 }

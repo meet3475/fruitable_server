@@ -20,6 +20,10 @@ const reviewsSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        status: {
+            type: String,
+            default: 'pending'
+        },
         isActive: {
             type: Boolean,
             default: true

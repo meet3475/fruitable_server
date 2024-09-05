@@ -29,13 +29,8 @@ routes.delete(
 )
 
 routes.get(
-    '/approve/:reviews_id', 
-    reviewsController.getReviews
-)
-
-routes.get(
-    '/reject/:reviews_id', 
-    reviewsController.getReviews
+    'approveAndreject/:status/:reviews_id', 
+    reviewsController.approveAndrejectReviews
 )
 
 routes.get(
@@ -56,11 +51,6 @@ routes.get(
 routes.get(
     '/top-rated-products', 
     reviewsController.toprate
-)
-
-routes.get(
-    '/speuser/:user_id', 
-    reviewsController.specificeUser
 )
 
 routes.get(
