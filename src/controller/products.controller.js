@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Products = require("../model/products.model");
 const { uploadfiles } = require("../utils/cloundary");
 
@@ -48,8 +49,14 @@ const searchName = async (req, res) => {
 
 const productsByCategory = async (req, res) => {
 
-    const products = await Products.aggregate([
+    const { category_id } = req.params;
 
+    const products = await Products.aggregate([
+        {
+            $match: {
+                category_id: new mongoose.Types.ObjectId(category_id)
+            }
+        },
         {
             $lookup: {
                 from: "categories",
@@ -85,8 +92,14 @@ const productsByCategory = async (req, res) => {
 
 const productsBySubcategory = async (req, res) => {
 
-    const products = await Products.aggregate([
+    const { subcategory_id } = req.params;
 
+    const products = await Products.aggregate([
+        {
+            $match: {
+                subcategory_id: new mongoose.Types.ObjectId(subcategory_id)
+            }
+        },
         {
             $lookup: {
                 from: "subcategories",
@@ -138,15 +151,25 @@ const topRate = async (req, res) => {
         {
             $group: {
                 _id: "$_id",
-                "product_name": { $first: "$name" },
-                "Totalrating": {
+                product_name: { $first: "$name" },
+                Totalrating: {
                     $sum: "$review.rating"
+                },
+                totalperson: {
+                    $sum: 1
+                }
+            }
+        },
+        {
+            $addFields: {
+                avgbyrate: {
+                    $divide: ["$Totalrating", "$totalperson"]
                 }
             }
         },
         {
             $sort: {
-                "Totalrating": -1
+                avgbyrate: -1
             }
         },
         {
@@ -255,7 +278,7 @@ const getproducts = async (req, res) => {
 
 const addproducts = async (req, res) => {
     try {
-        // console.log(req.body);
+        console.log(req.body);
         console.log(req.file);
 
         const fileResult = await uploadfiles(req.file.path, "Product");
@@ -518,6 +541,79 @@ const searchProduct = async (req, res) => {
     }
 }
 
+const discountProduct = async (req, res) => {
+    const products = await Products.aggregate([
+
+        {
+            $match: {
+                isActive: true
+            }
+        },
+        {
+            $lookup: {
+                from: "categories",
+                localField: "category_id",
+                foreignField: "_id",
+                as: "category"
+            }
+        },
+        {
+            $lookup: {
+                from: "subcategories",
+                localField: "subcategory_id",
+                foreignField: "_id",
+                as: "subcategory"
+            }
+        },
+        {
+            $unwind: "$category"
+        },
+        {
+            $unwind: "$subcategory"
+        },
+        {
+            $group: {
+                _id: {
+                    category_id: "$category_id",
+                    subcategory_id: "$subcategory_id"
+                },
+                category_name: { $first: "$category.name" },
+                subcategory_name: {
+                    $first: "$subcategory.name"
+                },
+                products: {
+                    $push: {
+                        _id: "$_id",
+                        name: "$name",
+                        description: "$description",
+                        price: "$price",
+                        stock: "$stock"
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                category_id: "$_id.category_id",
+                subcategory_id: "$_id.subcategory_id",
+                category_name: 1,
+                subcategory_name: 1,
+                products: 1
+            }
+        }
+
+    ])
+
+    res.status(200).json({
+        success: true,
+        message: "Products get  succesfully",
+        data: products
+    })
+
+    console.log(products);
+}
+
 module.exports = {
     listproducts,
     searchName,
@@ -530,5 +626,6 @@ module.exports = {
     addproducts,
     deleteproducts,
     updateproducts,
-    searchProduct
+    searchProduct,
+    discountProduct
 }

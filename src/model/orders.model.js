@@ -25,15 +25,9 @@ const ordersSchema = new mongoose.Schema(
             ref: 'Users',
             required: true
         },
-        sellar_id: {
-            type: mongoose.Types.ObjectId,
-            ref: 'Categorie',
-            required: true
-        },
         payment_id: {
             type: mongoose.Types.ObjectId,
             ref: 'Payments',
-            required: true
         },
         amount: {
             type: Number,
@@ -44,7 +38,6 @@ const ordersSchema = new mongoose.Schema(
         discount: {
             type: Number,
             trim: true,
-            required: false
         },
         status: {
             type: String,

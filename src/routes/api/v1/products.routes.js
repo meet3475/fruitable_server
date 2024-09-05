@@ -67,5 +67,9 @@ routes.get(
     productsController.searchProduct
 )
 
+routes.get(
+    '/discount',
+    productsController.discountProduct
+)
 
 module.exports = routes;

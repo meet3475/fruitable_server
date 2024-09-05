@@ -15,7 +15,6 @@ const productsSchema = new mongoose.Schema (
         sellar_id: {
             type: mongoose.Types.ObjectId,
             ref: 'User',
-            // required: true
         },
         name: {
             type: String,

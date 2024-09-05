@@ -1,8 +1,10 @@
-const Categories = require("../model/categories.model")
+const { default: mongoose } = require("mongoose");
+const Categories = require("../model/categories.model");
+const Subcategories = require("../model/subcategories.model");
 
 const listcategories = async (req, res) => {
 
-    console.log("categroyDone", req.query.page, req.query.pageSize);
+    // console.log("categroyDone", req.query.page, req.query.pageSize);
 
     try {
 
@@ -10,7 +12,7 @@ const listcategories = async (req, res) => {
         let pageSize = parseInt(req.query.pageSize)
 
         if (page <= 0 || pageSize <= 0) {
-           return res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: "page and pagesize must be greter than zero."
             })
@@ -25,8 +27,8 @@ const listcategories = async (req, res) => {
             })
         }
 
-        let startIndex=0, endIndex=0, paginationdata=[...categories]
-        
+        let startIndex = 0, endIndex = 0, paginationdata = [...categories]
+
         if (page > 0 || pageSize > 0) {           //page=2, pageSize=3
             startIndex = (page - 1) * pageSize;  // 2-1 * 3 = 3
             endIndex = startIndex + pageSize;    // 3 + 3 = 6
@@ -56,20 +58,20 @@ const getcategory = async (req, res) => {
         console.log(category);
 
         if (!category) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: "Category not found"
             })
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Category fetched sucessfully",
             data: category
         })
 
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Intenal server error." + error.message
         })
@@ -180,6 +182,32 @@ const totalProducts = async (req, res) => {
                 },
                 "product_name": { $push: "$product.name" }
             }
+        },
+        {
+            $group: {
+                _id: null,
+                categories: {
+                    $push: {
+                        _id: "$_id",
+                        category_name: "$category_name",
+                        TotalProduct: "$TotalProduct"
+                    }
+                },
+                OverallTotalProduct: { $sum: "$TotalProduct" }
+            }
+        },
+        {
+            $unwind: "$categories"
+        },
+        {
+            $project: {
+                _id: "$categories._id",
+                category_name: "$categories.category_name",
+                TotalProduct: "$categories.TotalProduct",
+                CategoryAvg: {
+                    $divide: ["$categories.TotalProduct", "$OverallTotalProduct"]  
+                }
+            }
         }
     ])
 
@@ -256,33 +284,33 @@ const countSubcategories = async (req, res) => {
 }
 
 const specificCategory = async (req, res) => {
-    const categories = await Categories.aggregate([
-        {
-            $lookup: {
-                from: "subcategories",
-                localField: "_id",
-                foreignField: "category_id",
-                as: "subcategory"
-            }
-        },
-        {
-            $project: {
-                "name": 1,
-                "subcategory": 1
-            }
+
+    try {
+        console.log(req.params.category_id);
+
+        const categories = await Subcategories.find({ category_id: req.params.category_id });
+        console.log(categories);
+
+        if (!categories || categories.length === 0) {
+            res.status(404).json({
+                success: false,
+                message: "categories not found"
+            })
         }
-    ])
 
-    res.status(200).json({
-        success: true,
-        message: "Category get  succesfully",
-        data: categories
-    })
+        res.status(200).json({
+            success: true,
+            message: "categories fetched sucessfully",
+            data: categories
+        })
 
-    console.log(categories);
-
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Intenal server error." + error.message
+        })
+    }
 }
-
 
 const addcategory = async (req, res) => {
 
@@ -345,67 +373,33 @@ const deletecategory = async (req, res) => {
     }
 }
 
-// const updatecategory = async (req, res) => {
-//     try {
-//         console.log("acbd", req.params.category_id, req.body);
-
-//         const category = await Categories.findByIdAndUpdate(req.params.category_id, req.body, { new: true, runValidators: true });
-//         console.log(category);
-
-//         if (!category) {
-//             res.status(400).json({
-//                 success: false,
-//                 message: "Category not Update"
-//             })
-//         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: "Category Update sucessfully",
-//             data: category
-//         })
-
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: "Intenal server error." + error.message
-//         })
-//     }
-// }
 const updatecategory = async (req, res) => {
     try {
-        // Remove fields that should not be updated
-        const { _id, isActive, createdAt, updatedAt, ...updateData } = req.body;
+        console.log("acbd", req.params.category_id, req.body);
 
-        const category = await Categories.findByIdAndUpdate(
-            req.params.category_id,
-            updateData,
-            { new: true, runValidators: true }
-        );
+        const category = await Categories.findByIdAndUpdate(req.params.category_id, req.body, { new: true, runValidators: true });
+        console.log(category);
 
         if (!category) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Category not found or not updated."
-            });
+                message: "Category not Update"
+            })
         }
 
         res.status(200).json({
             success: true,
-            message: "Category updated successfully",
+            message: "Category Update sucessfully",
             data: category
-        });
+        })
 
     } catch (error) {
-        console.error("Update Error:", error);
         res.status(500).json({
             success: false,
-            message: "Internal server error: " + error.message
-        });
+            message: "Intenal server error." + error.message
+        })
     }
-};
-
-
+}
 
 
 module.exports = {

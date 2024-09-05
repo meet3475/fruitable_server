@@ -1,12 +1,12 @@
 const Joi = require('joi');
 
 const getcategory = {
-    query: Joi.object().keys({
-        cat_id: Joi.string().required()
+    params: Joi.object().keys({
+        category_id:Joi.string().required()
     })
 }
 
-const createcategory = {
+const createcategory =  {
     body: Joi.object().keys({
         name: Joi.string().required().max(30).uppercase().trim(),
         discription: Joi.string().required().max(100),
@@ -14,15 +14,11 @@ const createcategory = {
     })
 }
 
-const updatecategory = {
+const updatecategory =  {
     body: Joi.object().keys({
         name: Joi.string().required().max(30).uppercase().trim(),
         discription: Joi.string().required().max(100),
-        image: Joi.string().allow(''),
-        isActive: Joi.boolean().required(),
-        _id: Joi.string().required(),
-        createdAt: Joi.string().required(),
-        updatedAt: Joi.string().required()
+        image: Joi.string().allow('')
     }),
     params: Joi.object().keys({
         category_id: Joi.string().required()

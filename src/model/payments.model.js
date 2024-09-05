@@ -10,7 +10,6 @@ const paymentsSchema = new mongoose.Schema(
         type: {
             type: String,
             trim: true,
-            required: flase
         },
         status: {
             type: String,

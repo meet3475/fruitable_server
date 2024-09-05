@@ -79,23 +79,19 @@ routes.get(
             const accessTokenoption = {
                 httpOnly: true,
                 secure: true,
-                sameSite: 'None',
-                maxAge: 60 * 60 * 1000,
-               
+                maxAge: 60 * 60 * 1000
             }
 
             const refreshTokenoption = {
                 httpOnly: true,
                 secure: true,
-                sameSite: 'None',
-                maxAge: 60 * 60 * 24 * 10 * 1000,  
+                maxAge: 60 * 60 * 24 * 10 * 1000
             }
 
             res.status(200)
                 .cookie("accessToken", accessToken, accessTokenoption)
                 .cookie("refreshToken", refreshToken, refreshTokenoption)
-                // .redirect("http://localhost:3000/")
-                .redirect("https://fruitable-client.vercel.app/")
+                .redirect("http://localhost:3000/")
 
         }
     });
@@ -126,7 +122,44 @@ routes.get(
     exportpdfmake
 )
 
+routes.get(
+    '/list-user', 
+    usersController.listUser
+)
 
+routes.get(
+    '/get-user/:user_id', 
+    usersController.getUsers
+)
 
+routes.put(
+    '/update-user/:user_id',
+    usersController.updateusers
+)
+
+routes.delete(
+    '/delete-user/:user_id',
+    usersController.deleteusers
+)
+
+routes.get(
+    '/searchuser',
+    usersController.searchUser
+)
+
+routes.get(
+    '/order/:user_id',
+    usersController.allOrder
+)
+
+routes.get(
+    '/review/:user_id',
+    usersController.reviewsuser
+)
+
+routes.get(
+    '/deactivate/:user_id',
+    usersController.deActive
+)
 
 module.exports = routes;

@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Variants = require("../model/variants.model");
 const { uploadfiles } = require("../utils/cloundary");
 
@@ -5,7 +6,7 @@ const { uploadfiles } = require("../utils/cloundary");
 const listVariants = async (req, res) => {
     try {
         const variant = await Variants.find()
-        console.log(variant);
+            console.log(variant); 
 
 
         if (!variant || variant.length === 0) {
@@ -29,7 +30,7 @@ const listVariants = async (req, res) => {
     }
 }
 
-const getVariant= async (req, res) => {
+const getVariant = async (req, res) => {
     try {
         const variant = await Variants.findById(req.params.variant_id)
         if (!variant) {
@@ -53,6 +54,7 @@ const getVariant= async (req, res) => {
         })
     }
 }
+
 const addVariant = async (req, res) => {
     // console.log("hahhaa", req.body);
     // console.log(req.file);
@@ -223,10 +225,237 @@ const deleteVariant = async (req, res) => {
     }
 }
 
-module.exports={
+const particularProduct = async (req, res) => {
+
+    const {product_id} = req.params;
+
+    const variant = await Variants.aggregate(
+        [
+            {
+                $match: {
+                    product_id: new mongoose.Types.ObjectId(product_id)
+                }
+            }
+        ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "variant get  succesfully",
+        data: variant
+    })
+
+    console.log(variant);
+}
+
+const countStock = async (req, res) => {
+
+    const {product_id} = req.params;
+
+    const variant = await Variants.aggregate(
+        [
+            {
+                $match: {
+                    product_id: new mongoose.Types.ObjectId(product_id)
+                }
+            },
+            {
+                $group: {
+                    _id: "$product_id",
+                    totalStock: { $sum: "$stock" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: "$productDetails"
+            },
+            {
+                $project: {
+                    productId: "$_id",
+                    totalStock: 1,
+                    "productDetails.name": 1,
+                    "productDetails.description": 1
+                }
+            }
+        ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "variant get  succesfully",
+        data: variant
+    })
+
+    console.log(variant);
+}
+
+const lowQuantity = async (req, res) => {
+    const variant = await Variants.aggregate([
+        {
+            $sort: {
+              "stock": 1
+            }
+          },
+          {
+            $limit: 1
+          }
+    ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "variant get  succesfully",
+        data: variant
+    })
+
+    console.log(variant);
+}
+
+const highPrice = async (req, res) => {
+    const variant = await Variants.aggregate([
+        {
+            $sort: {
+              "price": -1
+            }
+          },
+          {
+            $limit: 1
+          }
+    ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "variant get  succesfully",
+        data: variant
+    })
+
+    console.log(variant);
+}
+
+const multipleVariants = async (req, res) => {
+    const variant = await Variants.aggregate([
+        {
+            $group: {
+                _id: "$product_id",
+                variantCount: { $sum: 1 },
+                variants: {
+                    $push: {
+                        variant_id: "$_id",
+                        price: "$price",
+                        stock: "$stock",
+                        discount: "$discount",
+                        attributes: "$attributes"
+                    }
+                }
+            }
+        },
+        {
+            $match: {
+                variantCount: { $gt: 1 }
+            }
+        },
+        {
+            $lookup: {
+                from: "products",
+                localField: "_id",
+                foreignField: "_id",
+                as: "productDetails"
+            }
+        },
+        {
+            $unwind: "$productDetails"
+        },
+        {
+            $project: {
+                _id: 0,
+                productId: "$_id",
+                variantCount: 1,
+                variants: 1,
+                "productDetails.name": 1,
+                "productDetails.description": 1
+            }
+        }
+    ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "variant get  succesfully",
+        data: variant
+    })
+
+    console.log(variant);
+}
+
+const countActive = async (req, res) => {
+    const variant = await Variants.aggregate([
+        {
+            $match: {
+                isActive: true
+            }
+        },
+        {
+            $count: "NoOfActiveVariants"
+        }
+    ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "variant get  succesfully",
+        data: variant
+    })
+
+    console.log(variant);
+}
+
+const countProduct = async (req, res) => {
+    const variant = await Variants.aggregate([
+
+        {
+            $group: {
+                _id: "$product_id",
+                variantCount: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                product_id: "$_id",
+                variantCount: 1
+            }
+        }
+    ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "variant get  succesfully",
+        data: variant
+    })
+
+    console.log(variant);
+}
+
+module.exports = {
     listVariants,
     getVariant,
     addVariant,
     updateVariant,
-    deleteVariant
+    deleteVariant,
+    particularProduct,
+    countStock,
+    lowQuantity,
+    highPrice,
+    multipleVariants,
+    countActive,
+    countProduct
 }

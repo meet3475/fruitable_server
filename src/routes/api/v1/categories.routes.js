@@ -20,7 +20,7 @@ routes.get(
 // )
 
 routes.get(
-    '/get-categories',
+    '/get-categories/:category_id',
     Validation(categoryValidation.getcategory),
     categoriesController.getcategory
 )

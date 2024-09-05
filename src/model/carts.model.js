@@ -13,7 +13,8 @@ const itemsSchema = new mongoose.Schema(
         }
     },
     {
-        timestamps: true,
+        _id: false, 
+        timestamps: false, 
         versionKey: false
     }
 )
