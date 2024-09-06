@@ -4,7 +4,8 @@ info:
   description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
   version: 0.1.1
 servers:
-  - url: http://localhost:8000/api/v1
+  - url: https://fruitable-server-sigma.vercel.app/api/v1/
+        #  http://localhost:8000/api/v1
     description: Local Server
   - url: http://staging-api.example.com
     description: Optional server description, e.g. Internal staging server for testing
