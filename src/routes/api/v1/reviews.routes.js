@@ -29,7 +29,7 @@ routes.delete(
 )
 
 routes.get(
-    'approveAndreject/:status/:reviews_id', 
+    '/approveAndreject/:status/:reviews_id', 
     reviewsController.approveAndrejectReviews
 )
 
@@ -41,11 +41,6 @@ routes.get(
 routes.get(
     '/product/:product_id', 
     reviewsController.reviewofproduct
-)
-
-routes.get(
-    '/no-reviews', 
-    reviewsController.noreviewProduct
 )
 
 routes.get(

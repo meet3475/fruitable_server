@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const Orders = require("../model/orders.model");
-const { ObjectId } = require('mongodb');
+
 
 const listOrder = async (req, res) => {
     try {
@@ -133,12 +133,30 @@ const alluser = async (req, res) => {
 
 const allsellar = async (req, res) => {
 
-    const { sellar_id } = req.params;
+    const { user_id } = req.params;
 
     const orders = await Orders.aggregate([
         {
             $match: {
-                sellar_id: new mongoose.Types.ObjectId(sellar_id)
+                user_id: new mongoose.Types.ObjectId(user_id)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "user_id",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        {
+            $unwind: {
+                path: "$user"
+            }
+        },
+        {
+            $match: {
+                "user.role": "sellar"
             }
         }
     ]
@@ -152,32 +170,46 @@ const allsellar = async (req, res) => {
 
     console.log(orders);
 }
+
 
 const allproduct = async (req, res) => {
+    try {
+        const { product_id } = req.params;
 
-    const { product_id } = req.params;
-
-    const orders = await Orders.aggregate([
-        {
-            $match: {
-                product_id: new mongoose.Types.ObjectId(product_id)
+        const orders = await Orders.aggregate([
+            {
+                $match: {
+                    'items.product_id': new mongoose.Types.ObjectId(product_id)
+                }
+            },
+            {
+                $unwind: '$items'
+            },
+            {
+                $match: {
+                    'items.product_id': new mongoose.Types.ObjectId(product_id)
+                }
             }
-        }
-    ]
-    )
+        ]);
 
-    res.status(200).json({
-        success: true,
-        message: "orders get  succesfully",
-        data: orders
-    })
-
-    console.log(orders);
+        res.status(200).json({
+            success: true,
+            message: "Orders fetched successfully",
+            data: orders
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error fetching orders",
+            error: error.message
+        });
+    }
 }
 
-const cancelorder = async (req, res) => {
-    const orders = await Orders.aggregate([
 
+const cancelorder = async (req, res) => {
+
+    const orders = await Orders.aggregate([
         {
             $match: {
                 status: "cancel"
@@ -197,31 +229,41 @@ const cancelorder = async (req, res) => {
 
 const placeOrder = async (req, res) => {
     try {
-        const { user_id, items, discount, status, isActive, amount } = req.body;
+        const { user_id, payment_id, items, shipping_address, amount, discount,  status} = req.body;
 
-        // Create a new order
-        const newOrder = new Order({
+        if (!user_id || !payment_id || !items || !shipping_address || amount == null || discount == null || status == null) {
+            return res.status(400).json({
+                success: false,
+                message: "All required order parameters are missing."
+            });
+        }
+
+        const order = new Orders({
             user_id,
+            payment_id,
             items,
-            discount,
-            status,
-            isActive,
+            shipping_address,
             amount,
-            createdAt: new Date(),
-            updatedAt: new Date()
+            discount,
+            status
         });
 
-        // Save the order to the database
-        const savedOrder = await newOrder.save();
+        await order.save();
 
         res.status(201).json({
-            message: 'Order placed successfully',
-            order: savedOrder
+            success: true,
+            message: "Order added successfully.",
+            data: order
         });
     } catch (error) {
-        res.status(500).json({ message: 'Error placing order', error });
+        res.status(500).json({
+            success: false,
+            message: "Internal server error: " + error.message
+        });
     }
 };
+
+
 
 module.exports = {
     listOrder,

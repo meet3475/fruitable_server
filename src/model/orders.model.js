@@ -44,6 +44,9 @@ const ordersSchema = new mongoose.Schema(
             trim: true,
             required: true
         },
+        shipping_address: {
+            type: String,
+        },
         isActive: {
             type: Boolean,
             default: true

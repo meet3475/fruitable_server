@@ -72,4 +72,9 @@ routes.get(
     productsController.discountProduct
 )
 
+routes.get(
+    '/no-reviews', 
+    productsController.noreviewProduct
+)
+
 module.exports = routes;

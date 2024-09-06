@@ -36,11 +36,11 @@ routes.get(
 
 routes.get(
     '/product/:product_id', 
-    ordersController.allsellar
+    ordersController.allproduct
 )
 
 routes.get(
-    '/cancel/:order_id', 
+    '/cancel', 
     ordersController.cancelorder
 )
 

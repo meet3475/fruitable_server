@@ -614,6 +614,33 @@ const discountProduct = async (req, res) => {
     console.log(products);
 }
 
+const noreviewProduct = async (req, res) => {
+    const product = await Products.aggregate([
+        {
+            $lookup: {
+                from: "reviews",
+                localField: "_id",
+                foreignField: "product_id",
+                as: "review"
+            }
+        },
+        {
+            $match: {
+                review: { $eq: [] }
+            }
+        }
+    ]
+    )
+
+    res.status(200).json({
+        success: true,
+        message: "product get  succesfully",
+        data: product
+    })
+
+    console.log(product);
+}
+
 module.exports = {
     listproducts,
     searchName,
@@ -627,5 +654,6 @@ module.exports = {
     deleteproducts,
     updateproducts,
     searchProduct,
-    discountProduct
+    discountProduct,
+    noreviewProduct
 }

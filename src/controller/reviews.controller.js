@@ -1,6 +1,6 @@
 const Reviews = require("../model/reviews.model");
 const mongoose = require("mongoose");
-const { ObjectId } = require('mongodb');
+
 
 const listReviews = async (req, res) => {
     try {
@@ -138,68 +138,75 @@ const updateReviews = async (req, res) => {
 }
 
 const approveAndrejectReviews = async (req, res) => {
-    const { reviews_id } = req.params;
+    try {
+        const { reviews_id, status } = req.params; 
 
-    const result = await Reviews.updateOne(
-        { _id: new mongoose.Types.ObjectId(reviews_id) },
-        { $set: { isApproved: true } }
-    );
+        const isApproved = status === 'approve' ? true : status === 'disapprove' ? false : null;
 
-    if (result.matchedCount === 0) {
-        return res.status(404).json({
+        if (isApproved === null) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status. Use "approve" or "disapprove".'
+            });
+        }
+
+        const result = await Reviews.updateOne(
+            { _id: new mongoose.Types.ObjectId(reviews_id) }, 
+            { $set: { isApproved: isApproved } } 
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Review not found.',
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Review ${status}d successfully.`,
+            data: result
+        });
+
+    } catch (error) {
+        res.status(500).json({
             success: false,
-            message: 'Review not found.',
+            message: 'An error occurred while updating the review status.',
+            error: error.message
         });
     }
-
-    res.status(200).json({
-        success: true,
-        message: "reviews get  succesfully",
-        data: result
-    })
-
-    console.log(result);
 }
 
+
 const reviewofuser = async (req, res) => {
-    const reviews = await Reviews.aggregate([
-        {
-            $lookup: {
-                from: "users",
-                localField: "user_id",
-                foreignField: "_id",
-                as: "user"
-            }
-        },
-        {
-            $lookup: {
-                from: "products",
-                localField: "product_id",
-                foreignField: "_id",
-                as: "product"
-            }
-        },
-        {
-            $match: {
-                user: { $ne: [] }
-            }
-        },
-        {
-            $project: {
-                user: 1,
-                product: 1
-            }
-        }
-    ]
-    )
+    
 
-    res.status(200).json({
-        success: true,
-        message: "reviews get  succesfully",
-        data: reviews
-    })
+    try {
+        const { user_id } = req.params;
 
-    console.log(reviews);
+
+        const reviews = await Reviews.aggregate([
+            {
+                $match: {
+                    user_id: new mongoose.Types.ObjectId(user_id)
+                }
+            }
+        ]
+        )
+
+        res.status(200).json({
+            success: true,
+            message: "reviews get  succesfully",
+            data: reviews
+        })
+
+        console.log(reviews);
+    } catch (error) {
+        console.log(error);
+
+    }
+
+
 }
 
 const reviewofproduct = async (req, res) => {
@@ -227,59 +234,30 @@ const reviewofproduct = async (req, res) => {
     }
 }
 
-const noreviewProduct = async (req, res) => {
-    const reviews = await Reviews.aggregate([
-        {
-            $lookup: {
-                from: "reviews",
-                localField: "_id",
-                foreignField: "product_id",
-                as: "review"
-            }
-        },
-        {
-            $match: {
-                review: { $eq: [] }
-            }
-        }
-    ]
-    )
-
-    res.status(200).json({
-        success: true,
-        message: "reviews get  succesfully",
-        data: reviews
-    })
-
-    console.log(reviews);
-}
-
 const toprate = async (req, res) => {
     const reviews = await Reviews.aggregate([
-        {
-            $lookup: {
-                from: "products",
-                localField: "product_id",
-                foreignField: "_id",
-                as: "product"
-            }
-        },
-        {
-            $unwind: {
-                path: "$product"
-            }
-        },
+
         {
             $group: {
-                _id: "$_id",
-                "Totalrating": {
+                _id: "$product_id",
+                Totalrating: {
                     $sum: "$rating"
+                },
+                totalperson: {
+                    $sum: 1
+                }
+            }
+        },
+        {
+            $addFields: {
+                avgbyrate: {
+                    $divide: ["$Totalrating", "$totalperson"]
                 }
             }
         },
         {
             $sort: {
-                "Totalrating": -1
+                avgbyrate: -1
             }
         },
         {
@@ -353,7 +331,6 @@ module.exports = {
     approveAndrejectReviews,
     reviewofuser,
     reviewofproduct,
-    noreviewProduct,
     toprate,
     withcomment,
     countProduct

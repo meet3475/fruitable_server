@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Payments = require("../model/payments.model");
 
 const listPayment = async (req, res) => {
@@ -106,28 +107,18 @@ const updatePayment = async (req, res) => {
 }
 
 const orderPayment = async (req, res) => {
+
+    const { order_id } = req.params;
+
     const payments = await Payments.aggregate([
-       
         {
-            $lookup: {
-                from: "payments",
-                localField: "_id",
-                foreignField: "_id",
-                as: "paymentDetails"
+            $match: {
+                order_id: new mongoose.Types.ObjectId(order_id)
             }
         },
         {
-            $unwind: {
-                path: "$paymentDetails",
-                preserveNullAndEmptyArrays: true
-            }
-        },
-        {
-            $project: {
-                _id: 1,
-                order_id: 1,
-                gateway: "$paymentDetails.gateway",
-                status: "$paymentDetails.status",
+            $match: {
+                status: "done"
             }
         }
     ])
@@ -141,10 +132,42 @@ const orderPayment = async (req, res) => {
     console.log(payments);
 }
 
+const createPayment = async (req, res) => {
+
+    try {
+        console.log(req.body);
+
+        const payment = await Payments.create(req.body);
+        console.log(payment);
+
+        if (!payment) {
+            res.status(400).json({
+                success: false,
+                message: "payment not creted"
+            })
+        }
+
+        res.status(201).json({
+            success: true,
+            message: "payment careted sucessfully",
+            data: payment
+        })
+
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Intenal server error." + error.message
+        })
+    }
+}
+
+
 
 module.exports = {
     listPayment,
     getPayment,
+    createPayment,
     updatePayment,
     deletePayment,
     orderPayment

@@ -14,6 +14,11 @@ routes.get(
     paymentsController.getPayment
 )
 
+routes.post(
+    '/create-payment', 
+    paymentsController.createPayment
+)
+
 routes.put(
     '/update-payment/:payment_id',
     paymentsController.updatePayment
