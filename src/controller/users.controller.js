@@ -43,7 +43,6 @@ const craeteToken = async (id) => {
     }
 }
 
-
 const ragister = async (req, res) => {
 
     console.log(req.body);
@@ -85,15 +84,12 @@ const ragister = async (req, res) => {
             })
         }
 
-        // const { accessToken, refreshToken } = await craeteToken(userData._id);
-
         await sentMail(email);
 
         res.status(201).json({
             success: true,
             message: "ragister succesfully",
             data: userDataF,
-            // tokens: { accessToken, refreshToken }
         })
 
     } catch (error) {
@@ -148,12 +144,7 @@ const login = async (req, res) => {
 
         console.log({ accessToken, refreshToken });
 
-        // res.status(200).json({
-        //     success: true,
-        //     message: "login successful",
-        //     tokens: { accessToken, refreshToken }
-        // });
-
+        
 
         const userDataF = await Users.findById({ _id: user._id }).select("-password -refreshToken")
 
@@ -229,7 +220,8 @@ const generateNewTokens = async (req, res) => {
 
         const option = {
             httpOnly: true,
-            secure: true
+            secure: true,
+            sameSite: 'none'
         }
 
         res.status(200)
