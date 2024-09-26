@@ -8,8 +8,9 @@ const itemsSchema = new mongoose.Schema(
             required: true
         },
         qty: {
-            type: String,
-            required: true
+            type: Number,
+            required: true,
+            default : 1
         }
     },
     {
@@ -22,9 +23,11 @@ const itemsSchema = new mongoose.Schema(
 const cartsSchema = new mongoose.Schema(
     {
         user_id: {
-            type: mongoose.Types.ObjectId,
-            ref: 'Users',
+            type: String,
             required: true
+            // type: mongoose.Types.ObjectId,
+            // ref: 'Users',
+            // required: true
         },
         items: [itemsSchema],
         isActive: {

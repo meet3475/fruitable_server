@@ -1,8 +1,11 @@
+const mongoose = require('mongoose');
 const Carts = require("../model/carts.model");
+
 
 const listcarts = async (req, res) => {
     try {
         const carts = await Carts.find();
+
         console.log(carts);
 
 
@@ -68,7 +71,7 @@ const addcart = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Internal server error: " + error.message
+            message: 'Internal server error: ' + error.message
         });
     }
 };
@@ -98,9 +101,10 @@ const updatecart = async (req, res) => {
 }
 
 const getcartUser = async (req, res) => {
-   
+
     try {
         const cart = await Carts.findOne({ user_id: req.params.user_id });
+        // .populate('items.product_id', 'name price'); 
 
         if (!cart) {
             return res.status(404).json({
@@ -123,39 +127,64 @@ const getcartUser = async (req, res) => {
     }
 }
 
-const updatequantity = async (req, res) => {
+const updateQuantity = async (req, res) => {
     try {
-        const carts = await Carts.findByIdAndUpdate(req.params.cart_id, req.body, { new: true, runValidators: true })
-        console.log(carts);
+        const { cart_id } = req.params;
+        const { product_id, qty } = req.body;
 
-        if (!carts) {
-            return res.status(400).json({
-                success: false,
-                message: 'carts not found',
-            })
+        if (!mongoose.Types.ObjectId.isValid(cart_id) || !mongoose.Types.ObjectId.isValid(product_id)) {
+            return res.status(400).json({ message: 'Invalid ID format' });
         }
-        res.status(200).json({
-            success: true,
-            message: 'carts update successfully',
-            data: carts
-        })
+
+        const cart = await Carts.findById(cart_id);
+
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+
+        const itemIndex = cart.items.findIndex(item => item.product_id.toString() === product_id);
+
+        if (itemIndex === -1) {
+            return res.status(404).json({ message: 'Product not found in cart' });
+        }
+
+        // Update quantity
+        if (qty <= 0) {
+            cart.items.splice(itemIndex, 1);
+        } else {
+            cart.items[itemIndex].qty = qty;
+        }
+
+        await cart.save();
+
+        return res.status(200).json({
+            message: 'Cart updated successfully',
+            data: cart
+        });
+
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Internal error' + error.message
-        })
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
     }
-}
+};
+
 
 const deleteCart = async (req, res) => {
-    try {
+    try{
         const { cart_id, product_id } = req.params;
 
-       
+        if (!mongoose.Types.ObjectId.isValid(product_id)) {
+            return res.status(400).json({
+                message: 'Invalid product_id format'
+            });
+        }
+
+        console.log(cart_id, product_id);
+
         const cart = await Carts.findByIdAndUpdate(
             cart_id,
             { $pull: { items: { product_id: product_id } } },
-            { new: true } 
+            { new: true }
         );
 
         if (!cart) {
@@ -164,9 +193,11 @@ const deleteCart = async (req, res) => {
             });
         }
 
+        const updatecart = await Carts.findById(cart_id);
+
         return res.status(200).json({ 
             message: 'Item removed from cart', 
-            cart 
+            data: updatecart 
         });
 
     } catch (error) {
@@ -177,11 +208,12 @@ const deleteCart = async (req, res) => {
     }
 };
 
+
 module.exports = {
     listcarts,
     addcart,
     updatecart,
     getcartUser,
-    updatequantity,
+    updateQuantity,
     deleteCart
 }

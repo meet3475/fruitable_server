@@ -20,7 +20,7 @@ routes.put(
 
 routes.put(
     '/update-quantity/:cart_id',
-    cartsController.updatequantity
+    cartsController.updateQuantity
 )
 
 routes.get(
